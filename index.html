@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>القرآن الكريم</title>
+<style>
+body{margin:0;font-family:Arial;background:#f6f3ec;color:#1f2933}
+header{background:#1b4332;color:white;text-align:center;padding:30px 15px}
+h1{margin:0;font-size:34px}
+input{width:90%;max-width:500px;padding:14px;border:0;border-radius:12px;font-size:16px;margin-top:15px}
+main{padding:15px;max-width:900px;margin:auto}
+.card{background:white;margin:10px 0;padding:15px;border-radius:15px;box-shadow:0 3px 10px #0002}
+.card h3{margin:0;font-size:22px}
+.card p{margin:6px 0 0;color:#666}
+button{background:#1b4332;color:white;border:0;border-radius:10px;padding:12px 18px;font-size:16px}
+audio{width:100%;margin:15px 0}
+.ayah{background:white;margin:10px 0;padding:15px;border-radius:12px;font-size:23px;line-height:2}
+.num{background:#e7f5ee;color:#1b4332;padding:3px 8px;border-radius:20px}
+.hidden{display:none}
+footer{text-align:center;padding:25px;color:#777}
+</style>
+</head>
+<body>
+
+<header>
+<h1>القرآن الكريم</h1>
+<p>موقع مجاني لقراءة القرآن والاستماع للتلاوة</p>
+<input id="search" placeholder="ابحث عن سورة مثل البقرة أو Yusuf">
+</header>
+
+<main>
+<div id="list">جاري تحميل السور...</div>
+
+<div id="reader" class="hidden">
+<button onclick="back()">رجوع للسور</button>
+<h2 id="title"></h2>
+<audio id="audio" controls></audio>
+<div id="ayahs"></div>
+</div>
+</main>
+
+<footer>صدقة جارية — مجاني للجميع</footer>
+
+<script>
+let surahs=[];
+const list=document.getElementById("list");
+const reader=document.getElementById("reader");
+const search=document.getElementById("search");
+const title=document.getElementById("title");
+const ayahs=document.getElementById("ayahs");
+const audio=document.getElementById("audio");
+
+async function load(){
+ let r=await fetch("https://api.alquran.cloud/v1/surah");
+ let d=await r.json();
+ surahs=d.data;
+ show(surahs);
+}
+function show(arr){
+ list.innerHTML="";
+ arr.forEach(s=>{
+  let div=document.createElement("div");
+  div.className="card";
+  div.innerHTML=`<h3>${s.number}. ${s.name}</h3><p>${s.englishName} - عدد الآيات: ${s.numberOfAyahs}</p>`;
+  div.onclick=()=>openSurah(s.number,s.name,s.englishName);
+  list.appendChild(div);
+ });
+}
+async function openSurah(n,name,en){
+ list.classList.add("hidden");
+ search.classList.add("hidden");
+ reader.classList.remove("hidden");
+ title.innerText=name+" - "+en;
+ ayahs.innerHTML="جاري تحميل الآيات...";
+ let r=await fetch("https://api.alquran.cloud/v1/surah/"+n+"/ar.alafasy");
+ let d=await r.json();
+ audio.src=d.data.ayahs[0].audio;
+ ayahs.innerHTML="";
+ d.data.ayahs.forEach(a=>{
+  let div=document.createElement("div");
+  div.className="ayah";
+  div.innerHTML=`<span class="num">${a.numberInSurah}</span> ${a.text}`;
+  ayahs.appendChild(div);
+ });
+}
+function back(){
+ reader.classList.add("hidden");
+ list.classList.remove("hidden");
+ search.classList.remove("hidden");
+}
+search.oninput=()=>{
+ let q=search.value.trim().toLowerCase();
+ show(surahs.filter(s=>s.name.includes(q)||s.englishName.toLowerCase().includes(q)));
+}
+load();
+</script>
+
+</body>
+</html>
