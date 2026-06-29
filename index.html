@@ -3,98 +3,194 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>القرآن الكريم</title>
+<title>القرآن الكريم والأذكار</title>
+<meta name="description" content="موقع مجاني لقراءة القرآن الكريم والاستماع للتلاوة مع الأذكار والسبحة الإلكترونية.">
+<meta name="theme-color" content="#163f2f">
 <style>
-body{margin:0;font-family:Arial;background:#f6f3ec;color:#1f2933}
-header{background:#1b4332;color:white;text-align:center;padding:30px 15px}
-h1{margin:0;font-size:34px}
-input{width:90%;max-width:500px;padding:14px;border:0;border-radius:12px;font-size:16px;margin-top:15px}
-main{padding:15px;max-width:900px;margin:auto}
-.card{background:white;margin:10px 0;padding:15px;border-radius:15px;box-shadow:0 3px 10px #0002}
-.card h3{margin:0;font-size:22px}
-.card p{margin:6px 0 0;color:#666}
-button{background:#1b4332;color:white;border:0;border-radius:10px;padding:12px 18px;font-size:16px}
-audio{width:100%;margin:15px 0}
-.ayah{background:white;margin:10px 0;padding:15px;border-radius:12px;font-size:23px;line-height:2}
-.num{background:#e7f5ee;color:#1b4332;padding:3px 8px;border-radius:20px}
-.hidden{display:none}
-footer{text-align:center;padding:25px;color:#777}
+:root{--green:#163f2f;--green2:#216247;--gold:#d6a84f;--bg:#f6f3ec;--card:#fff;--text:#1f2937;--muted:#6b7280;--line:#e8e1d5}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{background:linear-gradient(135deg,var(--green),var(--green2));color:white;padding:28px 16px 18px;text-align:center;position:sticky;top:0;z-index:10;box-shadow:0 8px 20px #0002}
+h1{margin:0;font-size:32px} header p{margin:8px 0 16px;opacity:.92}
+.tabs{display:flex;gap:8px;overflow:auto;padding-bottom:4px;justify-content:center;flex-wrap:wrap}
+.tabs button{background:#ffffff22;color:white;border:1px solid #ffffff44;border-radius:999px;padding:10px 13px;font-size:15px}
+.tabs button.active{background:white;color:var(--green);font-weight:700}
+main{max-width:950px;margin:auto;padding:14px}
+.hero{background:linear-gradient(135deg,#fff,#fff8e7);border:1px solid var(--line);border-radius:22px;padding:18px;margin-bottom:14px;box-shadow:0 5px 20px #00000010}
+.hero h2{margin:0 0 8px;color:var(--green)}
+.box,.card{background:var(--card);border-radius:18px;box-shadow:0 5px 20px #00000012;border:1px solid var(--line)}
+.box{padding:14px;margin-bottom:14px}
+input,select{width:100%;padding:13px;border-radius:14px;border:1px solid #ddd;font-size:16px;background:white;margin:6px 0}
+.grid{display:grid;gap:12px}.card{padding:15px;cursor:pointer;transition:.2s}
+.card:hover{transform:translateY(-2px)}
+.card h3{margin:0;font-size:22px}.card p{margin:6px 0 0;color:var(--muted)}
+button{cursor:pointer}
+button.primary{background:var(--green);color:white;border:0;border-radius:12px;padding:12px 16px;font-size:16px}
+button.secondary{background:#eee;color:#222;border:0;border-radius:12px;padding:12px 16px;font-size:16px}
+.hidden{display:none!important}.ayah{background:white;border-radius:14px;padding:14px;margin:10px 0;font-size:23px;line-height:2.15;box-shadow:0 2px 10px #0000000c;border:1px solid #eee}
+.num{background:#e7f5ee;color:var(--green);border-radius:999px;padding:3px 8px;font-size:15px;margin-left:8px}
+audio{width:100%;margin:10px 0}.dhikr{font-size:21px;line-height:2;margin-bottom:12px}.count{color:var(--green);font-weight:700}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>*{flex:1}
+.tasbeeh{text-align:center;padding:25px}.tasbeeh .big{font-size:62px;font-weight:800;color:var(--green)}
+.tasbeeh button{font-size:20px;border-radius:18px;margin:6px;padding:14px 22px;border:0}.plus{background:var(--green);color:white}.reset{background:#ddd}
+.dark{--bg:#0f172a;--card:#111827;--text:#f8fafc;--muted:#cbd5e1;--line:#334155}
+.dark input,.dark select{background:#0b1220;color:#fff;border-color:#334155}.dark .ayah{background:#111827;border-color:#334155}.dark .hero{background:#111827}
+footer{text-align:center;color:var(--muted);padding:25px}
+.badge{display:inline-block;background:#e7f5ee;color:var(--green);padding:6px 10px;border-radius:999px;margin:3px;font-size:14px}
+.dark .badge{background:#0b3b2b;color:#d1fae5}
+@media(min-width:700px){.grid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
-
 <header>
 <h1>القرآن الكريم</h1>
-<p>موقع مجاني لقراءة القرآن والاستماع للتلاوة</p>
-<input id="search" placeholder="ابحث عن سورة مثل البقرة أو Yusuf">
+<p>قراءة القرآن، الاستماع للتلاوة، الأذكار، والتسبيح</p>
+<div class="tabs">
+<button class="active" onclick="tab('home',this)">🏠 الرئيسية</button>
+<button onclick="tab('quran',this)">📖 القرآن</button>
+<button onclick="tab('listen',this)">🎧 الاستماع</button>
+<button onclick="tab('adhkar',this)">🤲 الأذكار</button>
+<button onclick="tab('tasbeeh',this)">📿 التسبيح</button>
+<button onclick="toggleDark()">🌙 الوضع الليلي</button>
+</div>
 </header>
 
 <main>
-<div id="list">جاري تحميل السور...</div>
+<section id="home">
+<div class="hero">
+<h2>مرحبًا بك في موقع القرآن الكريم</h2>
+<p>موقع مجاني للناس لقراءة القرآن الكريم، الاستماع للتلاوات، قراءة الأذكار، واستخدام السبحة الإلكترونية.</p>
+<span class="badge">بدون إعلانات</span><span class="badge">مجاني للجميع</span><span class="badge">مناسب للجوال</span>
+</div>
+<div class="grid">
+<div class="card" onclick="goTab('quran')"><h3>📖 قراءة القرآن</h3><p>تصفح جميع السور والآيات بسهولة.</p></div>
+<div class="card" onclick="goTab('listen')"><h3>🎧 الاستماع</h3><p>اختر السورة والقارئ واستمع مباشرة.</p></div>
+<div class="card" onclick="goTab('adhkar')"><h3>🤲 الأذكار</h3><p>أذكار الصباح والمساء والنوم وبعد الصلاة.</p></div>
+<div class="card" onclick="goTab('tasbeeh')"><h3>📿 التسبيح</h3><p>سبحة إلكترونية تحفظ العدد على جهازك.</p></div>
+</div>
+</section>
 
+<section id="quran" class="hidden">
+<div class="box"><input id="search" placeholder="ابحث عن سورة مثل البقرة أو Yusuf"></div>
+<div id="surahs" class="grid">جاري تحميل السور...</div>
 <div id="reader" class="hidden">
-<button onclick="back()">رجوع للسور</button>
-<h2 id="title"></h2>
-<audio id="audio" controls></audio>
+<div class="box">
+<button class="primary" onclick="backToSurahs()">رجوع للسور</button>
+<h2 id="surahTitle"></h2>
+<audio id="surahAudio" controls></audio>
+</div>
 <div id="ayahs"></div>
 </div>
+</section>
+
+<section id="listen" class="hidden">
+<div class="box">
+<h2>الاستماع للقرآن</h2>
+<label>اختر القارئ</label>
+<select id="reciter">
+<option value="ar.alafasy">مشاري العفاسي</option>
+<option value="ar.abdurrahmaansudais">عبد الرحمن السديس</option>
+<option value="ar.minshawi">محمد صديق المنشاوي</option>
+<option value="ar.husary">محمود خليل الحصري</option>
+<option value="ar.mahermuaiqly">ماهر المعيقلي</option>
+</select>
+<label>اختر السورة</label>
+<select id="listenSurah"></select>
+<button class="primary" onclick="playSelected()">تشغيل السورة</button>
+<audio id="listenAudio" controls></audio>
+<p style="color:var(--muted)">ملاحظة: الصوت يعمل عبر الإنترنت من مصدر مجاني.</p>
+</div>
+</section>
+
+<section id="adhkar" class="hidden">
+<div class="box">
+<h2>الأذكار</h2>
+<select id="dhikrType" onchange="showDhikr()">
+<option value="morning">أذكار الصباح</option>
+<option value="evening">أذكار المساء</option>
+<option value="sleep">أذكار النوم</option>
+<option value="afterPrayer">أذكار بعد الصلاة</option>
+</select>
+</div>
+<div id="dhikrList"></div>
+</section>
+
+<section id="tasbeeh" class="hidden">
+<div class="box tasbeeh">
+<h2>السبحة الإلكترونية</h2>
+<div class="big" id="tasbeehCount">0</div>
+<button class="plus" onclick="tasbeehPlus()">سبحان الله</button>
+<button class="reset" onclick="tasbeehReset()">تصفير</button>
+<p>العدد محفوظ على جهازك حتى إذا أغلقت الموقع.</p>
+</div>
+</section>
 </main>
 
 <footer>صدقة جارية — مجاني للجميع</footer>
 
 <script>
-let surahs=[];
-const list=document.getElementById("list");
-const reader=document.getElementById("reader");
-const search=document.getElementById("search");
-const title=document.getElementById("title");
-const ayahs=document.getElementById("ayahs");
-const audio=document.getElementById("audio");
+const surahsDiv=document.getElementById('surahs'), reader=document.getElementById('reader'), ayahs=document.getElementById('ayahs');
+const search=document.getElementById('search'), surahTitle=document.getElementById('surahTitle'), surahAudio=document.getElementById('surahAudio');
+let surahs=[], tasCount=Number(localStorage.getItem('tasCount')||0); document.getElementById('tasbeehCount').innerText=tasCount;
 
-async function load(){
- let r=await fetch("https://api.alquran.cloud/v1/surah");
- let d=await r.json();
- surahs=d.data;
- show(surahs);
+function tab(id,btn){document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');window.scrollTo(0,0)}
+function goTab(id){let buttons=[...document.querySelectorAll('.tabs button')];let b=buttons.find(x=>x.textContent.includes(id==='quran'?'القرآن':id==='listen'?'الاستماع':id==='adhkar'?'الأذكار':'التسبيح'));tab(id,b)}
+function toggleDark(){document.body.classList.toggle('dark');localStorage.setItem('dark',document.body.classList.contains('dark'))}
+if(localStorage.getItem('dark')==='true')document.body.classList.add('dark');
+
+async function loadSurahs(){
+try{
+let r=await fetch('https://api.alquran.cloud/v1/surah'); let d=await r.json(); surahs=d.data; showSurahs(surahs); fillListen();
+}catch(e){surahsDiv.innerHTML='حدث خطأ في تحميل السور. تأكد من الإنترنت.'}
 }
-function show(arr){
- list.innerHTML="";
- arr.forEach(s=>{
-  let div=document.createElement("div");
-  div.className="card";
-  div.innerHTML=`<h3>${s.number}. ${s.name}</h3><p>${s.englishName} - عدد الآيات: ${s.numberOfAyahs}</p>`;
-  div.onclick=()=>openSurah(s.number,s.name,s.englishName);
-  list.appendChild(div);
- });
-}
+function showSurahs(arr){surahsDiv.innerHTML='';arr.forEach(s=>{let c=document.createElement('div');c.className='card';c.innerHTML=`<h3>${s.number}. ${s.name}</h3><p>${s.englishName} - عدد الآيات: ${s.numberOfAyahs}</p>`;c.onclick=()=>openSurah(s.number,s.name,s.englishName);surahsDiv.appendChild(c)})}
+search.oninput=()=>{let q=search.value.trim().toLowerCase();showSurahs(surahs.filter(s=>s.name.includes(q)||s.englishName.toLowerCase().includes(q)))}
 async function openSurah(n,name,en){
- list.classList.add("hidden");
- search.classList.add("hidden");
- reader.classList.remove("hidden");
- title.innerText=name+" - "+en;
- ayahs.innerHTML="جاري تحميل الآيات...";
- let r=await fetch("https://api.alquran.cloud/v1/surah/"+n+"/ar.alafasy");
- let d=await r.json();
- audio.src=d.data.ayahs[0].audio;
- ayahs.innerHTML="";
- d.data.ayahs.forEach(a=>{
-  let div=document.createElement("div");
-  div.className="ayah";
-  div.innerHTML=`<span class="num">${a.numberInSurah}</span> ${a.text}`;
-  ayahs.appendChild(div);
- });
+surahsDiv.classList.add('hidden');search.parentElement.classList.add('hidden');reader.classList.remove('hidden');surahTitle.innerText=name+' - '+en;ayahs.innerHTML='جاري تحميل الآيات...';
+let r=await fetch(`https://api.alquran.cloud/v1/surah/${n}/ar.alafasy`);let d=await r.json();surahAudio.src=d.data.ayahs[0].audio;ayahs.innerHTML='';
+d.data.ayahs.forEach(a=>{let div=document.createElement('div');div.className='ayah';div.innerHTML=`<span class="num">${a.numberInSurah}</span>${a.text}`;ayahs.appendChild(div)})
 }
-function back(){
- reader.classList.add("hidden");
- list.classList.remove("hidden");
- search.classList.remove("hidden");
-}
-search.oninput=()=>{
- let q=search.value.trim().toLowerCase();
- show(surahs.filter(s=>s.name.includes(q)||s.englishName.toLowerCase().includes(q)));
-}
-load();
-</script>
+function backToSurahs(){reader.classList.add('hidden');surahsDiv.classList.remove('hidden');search.parentElement.classList.remove('hidden')}
 
+function fillListen(){let sel=document.getElementById('listenSurah');sel.innerHTML='';surahs.forEach(s=>{let o=document.createElement('option');o.value=s.number;o.textContent=s.number+' - '+s.name+' / '+s.englishName;sel.appendChild(o)})}
+async function playSelected(){
+let n=document.getElementById('listenSurah').value, rec=document.getElementById('reciter').value, aud=document.getElementById('listenAudio');
+aud.src=''; let r=await fetch(`https://api.alquran.cloud/v1/surah/${n}/${rec}`);let d=await r.json();aud.src=d.data.ayahs[0].audio;aud.play();
+}
+
+const adhkar={
+morning:[
+['آية الكرسي: اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ...',1],
+['قُلْ هُوَ اللَّهُ أَحَدٌ، قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ، قُلْ أَعُوذُ بِرَبِّ النَّاسِ.',3],
+['أصبحنا وأصبح الملك لله، والحمد لله، لا إله إلا الله وحده لا شريك له.',1],
+['اللهم بك أصبحنا وبك أمسينا وبك نحيا وبك نموت وإليك النشور.',1],
+['سبحان الله وبحمده.',100]
+],
+evening:[
+['آية الكرسي: اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ...',1],
+['قُلْ هُوَ اللَّهُ أَحَدٌ، قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ، قُلْ أَعُوذُ بِرَبِّ النَّاسِ.',3],
+['أمسينا وأمسى الملك لله، والحمد لله، لا إله إلا الله وحده لا شريك له.',1],
+['اللهم بك أمسينا وبك أصبحنا وبك نحيا وبك نموت وإليك المصير.',1],
+['أعوذ بكلمات الله التامات من شر ما خلق.',3]
+],
+sleep:[
+['باسمك اللهم أموت وأحيا.',1],
+['اللهم قني عذابك يوم تبعث عبادك.',3],
+['سبحان الله 33، الحمد لله 33، الله أكبر 34.',1],
+['قُلْ هُوَ اللَّهُ أَحَدٌ والمعوذتين ثم يمسح بهما ما استطاع من جسده.',3]
+],
+afterPrayer:[
+['أستغفر الله.',3],
+['اللهم أنت السلام ومنك السلام تباركت يا ذا الجلال والإكرام.',1],
+['سبحان الله 33، الحمد لله 33، الله أكبر 33، ولا إله إلا الله وحده لا شريك له.',1],
+['آية الكرسي بعد كل صلاة.',1]
+]
+};
+function showDhikr(){let type=document.getElementById('dhikrType').value, box=document.getElementById('dhikrList');box.innerHTML='';adhkar[type].forEach((d,i)=>{let div=document.createElement('div');div.className='box';div.innerHTML=`<div class="dhikr">${d[0]}</div><div>التكرار: <span class="count">${d[1]}</span></div>`;box.appendChild(div)})}
+function tasbeehPlus(){tasCount++;document.getElementById('tasbeehCount').innerText=tasCount;localStorage.setItem('tasCount',tasCount)}
+function tasbeehReset(){tasCount=0;document.getElementById('tasbeehCount').innerText=0;localStorage.setItem('tasCount',0)}
+loadSurahs();showDhikr();
+</script>
 </body>
 </html>
