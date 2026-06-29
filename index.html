@@ -29,6 +29,7 @@ button{cursor:pointer}
 button.primary{background:var(--green);color:white;border:0;border-radius:12px;padding:12px 16px;font-size:16px}
 button.secondary{background:#eee;color:#222;border:0;border-radius:12px;padding:12px 16px;font-size:16px}
 .hidden{display:none!important}.ayah{background:white;border-radius:14px;padding:14px;margin:10px 0;font-size:23px;line-height:2.15;box-shadow:0 2px 10px #0000000c;border:1px solid #eee}
+.ayah.playing{outline:3px solid #216247;background:#f1fff6}
 .num{background:#e7f5ee;color:var(--green);border-radius:999px;padding:3px 8px;font-size:15px;margin-left:8px}
 audio{width:100%;margin:10px 0}.dhikr{font-size:21px;line-height:2;margin-bottom:12px}.count{color:var(--green);font-weight:700}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>*{flex:1}
@@ -79,6 +80,7 @@ footer{text-align:center;color:var(--muted);padding:25px}
 <button class="primary" onclick="backToSurahs()">رجوع للسور</button>
 <h2 id="surahTitle"></h2>
 <audio id="surahAudio" controls></audio>
+<p id="audioStatus" style="color:var(--muted);margin:6px 0">سيتم تشغيل آيات السورة متتالية.</p>
 </div>
 <div id="ayahs"></div>
 </div>
@@ -97,9 +99,9 @@ footer{text-align:center;color:var(--muted);padding:25px}
 </select>
 <label>اختر السورة</label>
 <select id="listenSurah"></select>
-<button class="primary" onclick="playSelected()">تشغيل السورة</button>
+<button class="primary" onclick="playSelected()">تشغيل السورة كاملة</button>
 <audio id="listenAudio" controls></audio>
-<p style="color:var(--muted)">ملاحظة: الصوت يعمل عبر الإنترنت من مصدر مجاني.</p>
+<p id="listenStatus" style="color:var(--muted)">سيتم تشغيل آيات السورة متتالية حتى النهاية.</p>
 </div>
 </section>
 
@@ -132,7 +134,10 @@ footer{text-align:center;color:var(--muted);padding:25px}
 <script>
 const surahsDiv=document.getElementById('surahs'), reader=document.getElementById('reader'), ayahs=document.getElementById('ayahs');
 const search=document.getElementById('search'), surahTitle=document.getElementById('surahTitle'), surahAudio=document.getElementById('surahAudio');
-let surahs=[], tasCount=Number(localStorage.getItem('tasCount')||0); document.getElementById('tasbeehCount').innerText=tasCount;
+const listenAudio=document.getElementById('listenAudio');
+let surahs=[], tasCount=Number(localStorage.getItem('tasCount')||0);
+let currentPlaylist=[], currentIndex=0, activeAudio=null, activeStatus=null;
+document.getElementById('tasbeehCount').innerText=tasCount;
 
 function tab(id,btn){document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');window.scrollTo(0,0)}
 function goTab(id){let buttons=[...document.querySelectorAll('.tabs button')];let b=buttons.find(x=>x.textContent.includes(id==='quran'?'القرآن':id==='listen'?'الاستماع':id==='adhkar'?'الأذكار':'التسبيح'));tab(id,b)}
@@ -146,17 +151,41 @@ let r=await fetch('https://api.alquran.cloud/v1/surah'); let d=await r.json(); s
 }
 function showSurahs(arr){surahsDiv.innerHTML='';arr.forEach(s=>{let c=document.createElement('div');c.className='card';c.innerHTML=`<h3>${s.number}. ${s.name}</h3><p>${s.englishName} - عدد الآيات: ${s.numberOfAyahs}</p>`;c.onclick=()=>openSurah(s.number,s.name,s.englishName);surahsDiv.appendChild(c)})}
 search.oninput=()=>{let q=search.value.trim().toLowerCase();showSurahs(surahs.filter(s=>s.name.includes(q)||s.englishName.toLowerCase().includes(q)))}
+
+function startPlaylist(audioEl, playlist, statusEl){
+currentPlaylist=playlist; currentIndex=0; activeAudio=audioEl; activeStatus=statusEl;
+audioEl.onended=playNextAyah;
+playCurrentAyah();
+}
+function playCurrentAyah(){
+if(!activeAudio || !currentPlaylist.length)return;
+document.querySelectorAll('.ayah.playing').forEach(x=>x.classList.remove('playing'));
+let item=currentPlaylist[currentIndex];
+activeAudio.src=item.audio;
+if(activeStatus) activeStatus.innerText='جاري تشغيل الآية '+item.numberInSurah+' من '+currentPlaylist.length;
+let ayahDiv=document.getElementById('ayah-'+item.numberInSurah);
+if(ayahDiv){ayahDiv.classList.add('playing');ayahDiv.scrollIntoView({behavior:'smooth',block:'center'});}
+activeAudio.play().catch(()=>{});
+}
+function playNextAyah(){
+if(currentIndex < currentPlaylist.length-1){currentIndex++; playCurrentAyah();}
+else{if(activeStatus) activeStatus.innerText='انتهت السورة.'; document.querySelectorAll('.ayah.playing').forEach(x=>x.classList.remove('playing'));}
+}
+
 async function openSurah(n,name,en){
 surahsDiv.classList.add('hidden');search.parentElement.classList.add('hidden');reader.classList.remove('hidden');surahTitle.innerText=name+' - '+en;ayahs.innerHTML='جاري تحميل الآيات...';
-let r=await fetch(`https://api.alquran.cloud/v1/surah/${n}/ar.alafasy`);let d=await r.json();surahAudio.src=d.data.ayahs[0].audio;ayahs.innerHTML='';
-d.data.ayahs.forEach(a=>{let div=document.createElement('div');div.className='ayah';div.innerHTML=`<span class="num">${a.numberInSurah}</span>${a.text}`;ayahs.appendChild(div)})
+let r=await fetch(`https://api.alquran.cloud/v1/surah/${n}/ar.alafasy`);let d=await r.json();ayahs.innerHTML='';
+d.data.ayahs.forEach(a=>{let div=document.createElement('div');div.className='ayah';div.id='ayah-'+a.numberInSurah;div.innerHTML=`<span class="num">${a.numberInSurah}</span>${a.text}`;ayahs.appendChild(div)})
+startPlaylist(surahAudio, d.data.ayahs, document.getElementById('audioStatus'));
 }
-function backToSurahs(){reader.classList.add('hidden');surahsDiv.classList.remove('hidden');search.parentElement.classList.remove('hidden')}
+function backToSurahs(){reader.classList.add('hidden');surahsDiv.classList.remove('hidden');search.parentElement.classList.remove('hidden');surahAudio.pause();}
 
 function fillListen(){let sel=document.getElementById('listenSurah');sel.innerHTML='';surahs.forEach(s=>{let o=document.createElement('option');o.value=s.number;o.textContent=s.number+' - '+s.name+' / '+s.englishName;sel.appendChild(o)})}
 async function playSelected(){
-let n=document.getElementById('listenSurah').value, rec=document.getElementById('reciter').value, aud=document.getElementById('listenAudio');
-aud.src=''; let r=await fetch(`https://api.alquran.cloud/v1/surah/${n}/${rec}`);let d=await r.json();aud.src=d.data.ayahs[0].audio;aud.play();
+let n=document.getElementById('listenSurah').value, rec=document.getElementById('reciter').value;
+document.getElementById('listenStatus').innerText='جاري تحميل السورة...';
+let r=await fetch(`https://api.alquran.cloud/v1/surah/${n}/${rec}`);let d=await r.json();
+startPlaylist(listenAudio, d.data.ayahs, document.getElementById('listenStatus'));
 }
 
 const adhkar={

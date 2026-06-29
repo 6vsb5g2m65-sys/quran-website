@@ -1,2 +1,3 @@
-# quran-website
-Free Quran website for everyone
+# Quran Website
+
+Free Quran, adhkar, listening, and tasbeeh website.
